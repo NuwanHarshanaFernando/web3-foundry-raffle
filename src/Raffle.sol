@@ -22,6 +22,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusClient.sol";  
 /**
  * @title A sample Raffle contract  
  * @author Nuwan Fernando
@@ -29,7 +31,7 @@ pragma solidity 0.8.19;
  * @dev Implements Chainlink VRFv2.5
  */
  
-contract Raffle {
+contract Raffle is VRFConsumerBaseV2Plus {
     /* Errors */
     error Raffle__SendMoreToEnterRaffle();
 
@@ -43,7 +45,8 @@ contract Raffle {
     event RaffleEntered(address indexed player);
 
 
-    constructor(uint256 entranceFee, uint256 interval) {
+    constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator) 
+    VRFConsumerBaseV2Plus(vrfCoordinator){
         i_entranceFee = entranceFee;
         i_interval = interval;
         s_lastTimeStamp = block.timestamp;
@@ -69,7 +72,36 @@ contract Raffle {
         if((block.timestamp - s_lastTimeStamp) < i_interval){
             revert();
         }
+        // Get our random number from Chainlink VRF-2.5
+        // 1. Request RNG
+        // 2. Get RNG
+
+        // requestId = s_vrfCoordinator.requestRandomWords(
+        //     VRFV2PlusClient.RandomWordsRequest({
+        //         keyHash: keyHash,
+        //         subId: s_subscriptionId,
+        //         requestConfirmations: requestConfirmations,
+        //         callbackGasLimit: callbackGasLimit,
+        //         numWords: numWords,
+        //         extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+        //     })
+        // );
+
+            VRFV2PlusClient.RandomWordsRequest request = VRFV2PlusClient.RandomWordsRequest({
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+            })
+
+
+
+         
     }
+
+     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override{}
 
     /** Getter Functions */
     function getEntranceFee() external view returns (uint256 ){
