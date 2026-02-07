@@ -36,6 +36,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__UpkeepNotNeeded(uint256 balance, uint256 playersLength, uint256 raffleState);
 
     /* Type Declarations */
     enum RaffleState {
@@ -110,7 +111,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     * @return upkeepNeeded - true if it's time to restart the lottery
     * @return - ignored
  */
-    function checkUpkeep(bytes calldata /* checkData */)
+    function checkUpkeep(bytes memory /* checkData */) // calldata is more gas efficient than memory.
         public
         view 
         returns (bool upkeepNeeded, bytes memory /* performData */)    
@@ -128,10 +129,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     // Now we're going to refactor pickWinner function to performUpkeep function.
-    function pickWinner() external {
+    function performUpkeep(bytes calldata /* performData */) external {
         // check to see if enough time has passed
-        if((block.timestamp - s_lastTimeStamp) < i_interval){
-            revert();
+        // if((block.timestamp - s_lastTimeStamp) < i_interval){
+        //     revert();
+        // }
+
+        // Now we're going to check if upkeep needed.
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
         }
 
         s_raffleState = RaffleState.CALCULATING;
@@ -160,14 +167,14 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
                 // Set nativePayment to true if you want to pay in native token (ETH) instead of LINK   
             });
-            uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
-
+            // uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+            s_vrfCoordinator.requestRandomWords(request);
 
          
     }
 
 // CEI: Checks, Effects, Interactions Pattern
-     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override{
+     function fulfillRandomWords(uint256 /* requestId */, uint256[] calldata randomWords) internal override{
         // Checks
 
             // Effects (Internal Contract State)
