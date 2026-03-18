@@ -74,4 +74,27 @@ contract RaffleTest is Test {
         // Asset
         raffle.enterRaffle{value: entranceFee}();
     }
+
+    function testDontAllowPlayersToEnterWhenRaffleIsCalculating() public {
+        // Arrange
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+        raffle.performUpkeep("");
+
+        // Act / Assert
+        vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+    }
+
+    // Encountered 1 failing test in test/unit/RaffleTest.t.sol:RaffleTest
+    // [FAIL: InvalidConsumer(0, 0x90193C961A926261B756D1E5bb255e67ff9498A1)] testDontAllowPlayersToEnterWhenRaffleIsCalculating() (gas: 107453)
+
+// Backtrace:
+//   at VRFCoordinatorV2_5Mock.requestRandomWords
+//   at Raffle.performUpkeep
+//   at RaffleTest.testDontAllowPlayersToEnterWhenRaffleIsCalculating
+
 }
