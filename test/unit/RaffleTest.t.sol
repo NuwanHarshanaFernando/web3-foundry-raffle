@@ -171,15 +171,21 @@ function testPerformUpkeepRevertsIfCheckUpkeepIsFalse() public {
 }
 
 
-// What if we need to get data from emitted events in our tests?
-// We have cheatcodes for that -> vm.recordLogs()
-
-function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public {
-    // Arrange
+modifier raffleEntered() {
+ // Arrange
     vm.prank(PLAYER);
     raffle.enterRaffle{value: entranceFee}();
     vm.warp(block.timestamp + interval + 1);
     vm.roll(block.number + 1);
+    _;
+}
+
+
+// What if we need to get data from emitted events in our tests?
+// We have cheatcodes for that -> vm.recordLogs()
+
+function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public raffleEntered {
+   
 
     // Act
     vm.recordLogs();
