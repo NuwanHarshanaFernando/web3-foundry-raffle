@@ -204,23 +204,11 @@ function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public raffleEnt
  /*//////////////////////////
         FULFILL RANDOM WORDS
 ////////////////////////////////*/
-function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep() public raffleEntered {
+function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 randomRequestId) public raffleEntered {
    // Arrange / Act / Assert
     vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(0, address(raffle));
+    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(randomRequestId, address(raffle));
 
-// Check for different requestIds (We can use fuzz-testing here)
-       vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
-
-       vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(2, address(raffle));
-
-       vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(3, address(raffle));
-
-       vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
-    VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(476978687, address(raffle));
 
 }
 
