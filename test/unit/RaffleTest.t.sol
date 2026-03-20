@@ -7,8 +7,9 @@ import {Raffle} from "../../src/Raffle.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {CodeConstants} from "script/HelperConfig.s.sol";
 
-contract RaffleTest is Test {
+contract RaffleTest is CodeConstants, Test {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -204,15 +205,21 @@ function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public raffleEnt
  /*//////////////////////////
         FULFILL RANDOM WORDS
 ////////////////////////////////*/
-function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 randomRequestId) public raffleEntered {
+modifier skipFork() {
+    if (block.chainid != LOCAL_CHAIN_ID) {
+        return;
+    }
+    _;
+}
+
+function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 randomRequestId) public raffleEntered skipFork{
    // Arrange / Act / Assert
     vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
     VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(randomRequestId, address(raffle));
 
-
 }
 
-function testFulfillRandomWordsPicksAWinnerResetsTheLotteryAndSendsMoney() public raffleEntered {
+function testFulfillRandomWordsPicksAWinnerResetsTheLotteryAndSendsMoney() public raffleEntered skipFork {
     // Arrange
     uint256 additionalEntrants = 3; // 4 total
     uint256 startingIndex = 1; 
