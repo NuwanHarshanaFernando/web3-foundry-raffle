@@ -50,7 +50,8 @@ contract FundSubscription is Script, CodeConstants {
 
       if(block.chainid == LOCAL_CHAIN_ID){
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subscriptionId, FUND_AMOUNT);
+        // VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subscriptionId, FUND_AMOUNT);
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(subscriptionId, FUND_AMOUNT * 100); // To pass testFulfillRandomWordsPicksAWinnerResetsTheLotteryAndSendsMoney
         vm.stopBroadcast();
       } else {
         vm.startBroadcast();
