@@ -60,6 +60,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /* Events */
     event RaffleEntered(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
 
     constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator, bytes32 gasLane, uint256 subscriptionId, uint32 callbackGasLimit) 
@@ -168,8 +169,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 // Set nativePayment to true if you want to pay in native token (ETH) instead of LINK   
             });
             // uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
-            s_vrfCoordinator.requestRandomWords(request);
-
+            // s_vrfCoordinator.requestRandomWords(request);
+            uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+           
+            // Quiz.... Is this redundant? Yes because vrfCoordinator also emits that event, But we're going to add this for testing if event is working
+            emit RequestedRaffleWinner(requestId);
          
     }
 
